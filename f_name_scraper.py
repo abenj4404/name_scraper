@@ -1,4 +1,8 @@
-#PRACTICE SCRAPER FILE
+#ABT NAME SCRAPER FILE
+#SEE requirements.txt for dependencies
+####
+####
+
 #IMPORT TOOLS
 import requests
 from requests import get
@@ -6,10 +10,10 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import numpy as np
 
-#MAKES SURE RESULTS ARE IN ENGLISH
+#ENGLISH RESULTS HEADER
 headers = {"Accept-Language": "en-US, en;q=0.5"}
 
-#INITIALIZE LISTS
+#INITIALIZE LISTS TO STORE SCRAPED DATA TO BE PAIRED WITH DATAFRAME COLUMNS
 first_names = []
 gender = []
 usage = []
@@ -22,15 +26,16 @@ urls = ["https://www.behindthename.com/names/usage/mythology",
 'https://www.behindthename.com/names/usage/mythology/4',
 'https://www.behindthename.com/names/usage/mythology/5']
 
+#LOOP THROUGH URLS AND APPEND TO EMPTY LISTS
 for url in urls:
     results = requests.get(url, headers=headers) 
 
     soup = BeautifulSoup(results.text, "html.parser")
-    #FURTHER STRUCTURES FORMAT
+    
+    #FORMAT DATA BETTER
     print(soup.prettify())
 
     container  = soup.find_all('div', class_="browsename")
-
 
     #LOOP THROUGH EACH CONTAINER TO GET ALL DATA DESIRED
     for div in container:
@@ -47,9 +52,7 @@ for url in urls:
         desc = div.text
         description.append(desc)
 
-#create dataframe with pandas
-#recall that in these key value pairs, the keys are the df column names and
-#the values are the lists of data that have been scraped
+#CREATE DATAFRAME WITH PANDAS
 firstnameframe = pd.DataFrame({
     'first_name': first_names,
     'genders': gender,
@@ -57,5 +60,5 @@ firstnameframe = pd.DataFrame({
     'descriptions': description,
  })
 
-#SAVE DATA TO CSV FILE USING PANDAS
+#SAVE DATA TO CSV FILE
 firstnameframe.to_csv('firstnames.csv')
