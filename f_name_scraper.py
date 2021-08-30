@@ -5,6 +5,7 @@
 
 #IMPORT TOOLS
 import requests
+import pytest
 from requests import get
 from bs4 import BeautifulSoup
 import pandas as pd

@@ -3,62 +3,39 @@
 ####
 ####
 
-#IMPORT TOOLS
-import requests
-from requests import get
+#IMPORT LIBRARIES
+import pandas as pd 
 from bs4 import BeautifulSoup
-import pandas as pd
-import numpy as np
+from selenium import webdriver
 
-#ENGLISH RESULTS HEADER
-headers = {"Accept-Language": "en-US, en;q=0.5"}
 
-#INITIALIZE LISTS TO STORE SCRAPED DATA TO BE PAIRED WITH DATAFRAME COLUMNS
-first_names = []
-gender = []
-usage = []
-description = []
+#INITIALIZE SAFARI SESSION
+driver = webdriver.Safari()
 
-#SPECIFY URLS TO SCRAPE
-urls = ["https://www.behindthename.com/names/usage/mythology", 
-'https://www.behindthename.com/names/usage/mythology/2',
-'https://www.behindthename.com/names/usage/mythology/3',
-'https://www.behindthename.com/names/usage/mythology/4',
-'https://www.behindthename.com/names/usage/mythology/5']
+url = "https://en.wikipedia.org/wiki/List_of_most_common_surnames_in_Europe"
 
-#LOOP THROUGH URLS AND APPEND TO EMPTY LISTS
-for url in urls:
-    results = requests.get(url, headers=headers) 
+driver.get(url)
 
-    soup = BeautifulSoup(results.text, "html.parser")
-    
-    #FORMAT DATA BETTER
-    print(soup.prettify())
+#make soup!
+soup = BeautifulSoup(driver.page_source,'lxml')
+print(soup.prettify())
 
-    container  = soup.find_all('div', class_="browsename")
+#CLOSER BROWSER AND ASSOCIATED WINDOWS, TABS WHEN DONE
+driver.quit()
 
-    #LOOP THROUGH EACH CONTAINER TO GET ALL DATA DESIRED
-    for div in container:
 
-        name = div.span.a.text
-        first_names.append(name)
+#FIND ALL TABLES TO SCRAPE
+all_tables = soup.find_all('table', class_="wikitable")
 
-        gen = div.find('span', class_='listgender').span.text
-        gender.append(gen)
+#INITIALIZE EMPTY LISTS FOR DATAFRAME
+table_list = []
 
-        use = div.find('span', class_='listusage').a.text
-        usage.append(use)
+#LOOP THROUGH ALL TABLES
+for table in all_tables:
+    row_data = [[cell.text for cell in row.find_all(["th","td"])] for row in table.find_all("tr")]
+    table_list.append(row_data)
 
-        desc = div.text
-        description.append(desc)
+surnameframe = pd.DataFrame(row_data)
+surnameframe.to_csv('test.csv')
 
-#CREATE DATAFRAME WITH PANDAS
-firstnameframe = pd.DataFrame({
-    'first_name': first_names,
-    'genders': gender,
-    'use': usage,
-    'descriptions': description,
- })
 
-#SAVE DATA TO CSV FILE
-firstnameframe.to_csv('firstnames.csv')
